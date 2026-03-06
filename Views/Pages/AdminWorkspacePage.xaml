@@ -1,0 +1,87 @@
+﻿<UserControl x:Class="ShoesStoreApp.Views.Pages.AdminWorkspacePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:infra="clr-namespace:ShoesStoreApp.Infrastructure"
+   
+             FontFamily="Times New Roman">
+    <UserControl.Resources>
+        <infra:DiscountColorConverter x:Key="DiscountConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
+    <DockPanel Background="#FFFFFF">
+        <Border DockPanel.Dock="Top" Background="White" BorderBrush="#7FFF00" BorderThickness="0,0,0,2" Padding="10">
+            <WrapPanel VerticalAlignment="Center">
+
+                <TextBlock Text="Поиск:" VerticalAlignment="Center" Margin="5,0" FontFamily="Times New Roman"/>
+                <TextBox Width="150" VerticalAlignment="Center" Tag="Найти по названию..." />
+
+                <TextBlock Text="Цена:" VerticalAlignment="Center" Margin="15,0,5,0" FontFamily="Times New Roman"/>
+                <ComboBox Width="140" VerticalAlignment="Center" Height="30"
+                  SelectedValuePath="Tag" SelectedValue="{Binding SortType}">
+                    <ComboBoxItem Content="По умолчанию" Tag="None"/>
+                    <ComboBoxItem Content="По возрастанию" Tag="Asc"/>
+                    <ComboBoxItem Content="По убыванию" Tag="Desc"/>
+                </ComboBox>
+
+                <Button Content="+ ДОБАВИТЬ ТОВАР" 
+                Command="{Binding AddCommand}" 
+                Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"
+                Background="#00FA9A" Height="35" Margin="20,0,5,0" Padding="10,0"/>
+
+                <Button Content="📋 ЗАКАЗЫ" 
+                Command="{Binding DataContext.ShowOrdersCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                Background="#7FFF00" Height="35" Margin="5,0" Padding="15,0" FontWeight="Bold"/>
+
+            </WrapPanel>
+        </Border>
+
+        <ListBox ItemsSource="{Binding ProductsView}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderThickness="0">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel HorizontalAlignment="Center"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="LightGray" BorderThickness="1" Margin="10" Width="260" CornerRadius="8"
+                    Background="{Binding Discount, Converter={StaticResource DiscountConverter}}">
+                        <StackPanel Margin="10">
+                            <Image Source="{Binding FullImagePath}" Height="130" Stretch="Uniform" Margin="0,0,0,10">
+                                <Image.ToolTip>
+                                    <ToolTip Content="{Binding FullImagePath}"/>
+                                </Image.ToolTip>
+                            </Image>
+
+                            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" TextAlignment="Center"/>
+                            <TextBlock Text="{Binding Category, StringFormat='Категория: {0}'}" FontSize="11" Foreground="#555" Margin="0,5,0,0"/>
+                            <TextBlock Text="{Binding Manufacturer, StringFormat='Производитель: {0}'}" FontSize="11" Foreground="#555"/>
+                            <TextBlock Text="{Binding QuantityInStock, StringFormat='На складе: {0} шт.'}" FontSize="12" FontWeight="SemiBold" Margin="0,5"/>
+
+                            <Separator Margin="0,5"/>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="Цена: " VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Price, StringFormat={}{0} ₽}" TextDecorations="Strikethrough" Margin="0,0,8,0" Foreground="Gray"
+                                   Visibility="{Binding Discount, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <TextBlock Text="{Binding FinalPrice, StringFormat={}{0:N0} ₽}" FontWeight="Bold" FontSize="18" Foreground="Red"/>
+                            </StackPanel>
+
+                            <TextBlock Text="{Binding Discount, StringFormat='Скидка: {0}%'}" HorizontalAlignment="Right" Foreground="Blue" FontWeight="Bold"/>
+                            <StackPanel Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Button Content="РЕДАКТИРОВАТЬ" 
+                                Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"
+                                Height="35" Margin="0,10,0,0"/>
+                                <Button Content="УДАЛИТЬ" 
+                                Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"
+                                Background="LightCoral" Height="35" Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,40 @@
+﻿<Window x:Class="ShoesStoreApp.Views.Windows.ToastWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Notification" Height="80" Width="300"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False" 
+        WindowStartupLocation="Manual" FontFamily="Times New Roman">
+    <Border x:Name="ToastBorder" Background="#FFFFFF" BorderBrush="#7FFF00" 
+            BorderThickness="2" CornerRadius="10" Margin="5">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="10" Opacity="0.3" ShadowDepth="2"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Background="#00FA9A" CornerRadius="25" Width="40" Height="40" Margin="10">
+                <TextBlock x:Name="IconText" Text="✓" Foreground="White" 
+                           VerticalAlignment="Center" HorizontalAlignment="Center" 
+                           FontSize="20" FontWeight="Bold"/>
+            </Border>
+            <TextBlock x:Name="MessageText" Grid.Column="1" Text="Сообщение..." 
+                       VerticalAlignment="Center" TextWrapping="Wrap" 
+                       Margin="5,0,15,0" FontSize="14" Foreground="#333"/>
+        </Grid>
+    </Border>
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Window.Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" 
+                                     From="0" To="1" Duration="0:0:0.3"/>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" 
+                                     From="1" To="0" BeginTime="0:0:2.5" Duration="0:0:0.5"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Window.Triggers>
+</Window>

@@ -1,0 +1,58 @@
+﻿<Window x:Class="ShoesStoreApp.Views.Windows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:ShoesStoreApp.ViewModels" 
+        xmlns:pages="clr-namespace:ShoesStoreApp.Views.Pages"
+        Icon="/Assets/Images/logo2.png" 
+        Title="{Binding WindowTitle}" Height="650" Width="1000"
+        WindowStartupLocation="CenterScreen" FontFamily="Times New Roman">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <DataTemplate DataType="{x:Type vm:ProductViewModel}">
+            <pages:ProductListView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AdminViewModel}">
+            <pages:AdminWorkspacePage/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ManagerViewModel}">
+            <pages:AdminWorkspacePage/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:OrderViewModel}">
+            <pages:OrderListView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CartViewModel}">
+            <pages:CartView/>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <DockPanel Background="#FFFFFF">
+        <Border DockPanel.Dock="Top" Background="#7FFF00" Padding="10" BorderBrush="LightGray" BorderThickness="0,0,0,1">
+            <Grid>
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="/Assets/Images/logo.png" Height="40" Stretch="Uniform"/>
+                    <TextBlock Text="ООО «Обувь»" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Content="КАТАЛОГ" Command="{Binding ShowProductsCommand}" Height="35" Margin="5,0" Width="66"/>
+                    <Button Content="ЗАКАЗЫ" 
+                            Command="{Binding ShowOrdersCommand}" 
+                            Visibility="{Binding IsManagerOrAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Height="35" Margin="5,0"/>
+                    <Button Content="🛒 КОРЗИНА" 
+                            Command="{Binding ShowCartCommand}" 
+                            Visibility="{Binding IsNotGuest, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Background="#00FA9A" Height="35" Margin="5,0"/>
+                    <Button Content="ВЫХОД" Click="Logout_Click" Height="35" Margin="15,0,5,0" Background="LightCoral" Width="51"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        <ContentControl Content="{Binding CurrentPage}"/>
+    </DockPanel>
+</Window>
