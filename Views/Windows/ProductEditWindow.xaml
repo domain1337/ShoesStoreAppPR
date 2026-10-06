@@ -38,7 +38,7 @@
                         <TextBox Text="{Binding CurrentProduct.ImagePath}" IsReadOnly="True" VerticalContentAlignment="Center" RenderTransformOrigin="0.473,2.403" Margin="5,-8,5,10"/>
                         <Button Grid.Column="1" Content="ОБЗОР" Command="{Binding SelectImageCommand}" Width="60" Margin="5,-8,0,10"/>
                     </Grid>
-                    <Image Source="{Binding CurrentProduct.ImagePath}" Height="100" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,5"/>
+                    <Image Source="{Binding CurrentProduct.FullImagePath}" Height="100" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,5"/>
                 </StackPanel>
             </Grid>
 

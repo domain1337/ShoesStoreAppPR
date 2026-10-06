@@ -13,16 +13,16 @@ namespace ShoesStoreApp.ViewModels
 {
     public class ProductViewModel : ViewModelBase
     {
-        private ObservableCollection<Product> _allProducts;
+        private ObservableCollection<Product> _allProducts = new();
 
-        private ICollectionView _productsView;
+        private ICollectionView _productsView = null!;
         public ICollectionView ProductsView
         {
             get => _productsView;
             set => Set(ref _productsView, value);
         }
 
-        private string _searchText;
+        private string _searchText = string.Empty;
         public string SearchText
         {
             get => _searchText;
@@ -31,6 +31,7 @@ namespace ShoesStoreApp.ViewModels
 
         public bool IsAdmin => UserService.IsAdmin;
         public bool IsManagerOrAdmin => UserService.IsManagerOrAdmin;
+        public bool IsNotGuest => UserService.IsAuthenticated;
 
         public RelayCommand AddToCartCommand { get; }
 
@@ -53,21 +54,28 @@ namespace ShoesStoreApp.ViewModels
             {
                 if (obj is Product product)
                 {
+                    if (!UserService.IsAuthenticated)
+                    {
+                        NotificationService.Show("Войдите, чтобы добавить товар в корзину.", true);
+                        return;
+                    }
                     CartService.Add(product);
 
                     NotificationService.Show($"Товар '{product.Title}' добавлен в корзину!", false);
                 }
             });
 
-            LoadProducts();
+            _ = InitializeAsync();
         }
 
-        public async void LoadProducts()
+        private async Task InitializeAsync() => await LoadProductsAsync();
+
+        public async Task LoadProductsAsync()
         {
             try
             {
-                var response = await SupabaseService.Client.From<Product>().Get();
-                _allProducts = new ObservableCollection<Product>(response.Models);
+                var products = await StoreRepository.Current.GetProductsAsync();
+                _allProducts = new ObservableCollection<Product>(products);
 
                 ProductsView = CollectionViewSource.GetDefaultView(_allProducts);
 
@@ -76,9 +84,10 @@ namespace ShoesStoreApp.ViewModels
                     if (!IsManagerOrAdmin) return true;
                     if (string.IsNullOrWhiteSpace(SearchText)) return true;
 
-                    return ((Product)obj).Title.ToLower().Contains(SearchText.ToLower());
+                    return ((Product)obj).Title?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true;
                 };
 
+                ApplySorting();
                 OnPropertyChanged(nameof(ProductsView));
             }
             catch (Exception ex)

@@ -1,22 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace ShoesStoreApp.Services;
 
-namespace ShoesStoreApp.Services
+public static class UserService
 {
-    public static class UserService
+    public static string CurrentRole { get; private set; } = "guest";
+    public static string? UserEmail { get; private set; }
+
+    public static bool IsAdmin => CurrentRole == "admin";
+    public static bool IsManagerOrAdmin => IsAdmin || CurrentRole == "manager";
+    public static bool IsAuthenticated => CurrentRole != "guest";
+
+    public static void SetAuthenticated(string email, string role)
     {
-        public static string CurrentRole { get; set; } = "guest";
-        public static string UserEmail { get; set; }
+        UserEmail = email;
+        CurrentRole = role is "admin" or "manager" ? role : "client";
+    }
 
-        public static bool IsAdmin => CurrentRole.ToLower() == "admin";
-
-        public static bool IsManagerOrAdmin =>
-            CurrentRole.ToLower() == "admin" || CurrentRole.ToLower() == "manager";
-        public static bool IsSimpleUser =>
-            CurrentRole.ToLower() == "client" || CurrentRole.ToLower() == "guest";
-        public static bool IsAuthenticated => CurrentRole.ToLower() != "guest";
+    public static void Reset()
+    {
+        CurrentRole = "guest";
+        UserEmail = null;
     }
 }

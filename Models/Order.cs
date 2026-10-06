@@ -15,15 +15,15 @@ namespace ShoesStoreApp.Models
         public Guid Id { get; set; }
 
         [Column("customer_email")]
-        public string CustomerEmail { get; set; }
+        public string CustomerEmail { get; set; } = string.Empty;
 
         [Column("order_content")]
-        public string OrderContent { get; set; }
+        public string OrderContent { get; set; } = string.Empty;
 
         [Column("total_price")]
         public decimal TotalPrice { get; set; }
 
         [Column("status")]
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty;
     }
 }

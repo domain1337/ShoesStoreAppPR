@@ -12,7 +12,7 @@ namespace ShoesStoreApp.ViewModels
     {
         public RelayCommand AddCommand { get; }
         public RelayCommand EditCommand { get; }
-        public RelayCommand DeleteCommand { get; }
+        public AsyncRelayCommand DeleteCommand { get; }
 
         public AdminViewModel()
         {
@@ -23,7 +23,7 @@ namespace ShoesStoreApp.ViewModels
                 if (obj is Product product) ExecuteEdit(product);
             });
 
-            DeleteCommand = new RelayCommand(async obj =>
+            DeleteCommand = new AsyncRelayCommand(async obj =>
             {
                 if (obj is Product product) await ExecuteDelete(product);
             });
@@ -47,7 +47,7 @@ namespace ShoesStoreApp.ViewModels
 
             if (editWindow.ShowDialog() == true)
             {
-                LoadProducts();
+                _ = LoadProductsAsync();
             }
         }
 
@@ -60,12 +60,9 @@ namespace ShoesStoreApp.ViewModels
             {
                 try
                 {
-                    await SupabaseService.Client
-                        .From<Product>()
-                        .Where(x => x.Id == product.Id)
-                        .Delete();
+                    await StoreRepository.Current.DeleteProductAsync(product.Id);
 
-                    LoadProducts();
+                    await LoadProductsAsync();
                 }
                 catch (Exception ex)
                 {

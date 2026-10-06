@@ -13,7 +13,7 @@ namespace ShoesStoreApp.ViewModels
 {
     public class OrderViewModel : ViewModelBase
     {
-        private ObservableCollection<Order> _orders;
+        private ObservableCollection<Order> _orders = new();
         public ObservableCollection<Order> Orders
         {
             get => _orders;
@@ -22,15 +22,15 @@ namespace ShoesStoreApp.ViewModels
 
         public OrderViewModel()
         {
-            LoadOrders();
+            _ = LoadOrdersAsync();
         }
 
-        public async void LoadOrders()
+        public async Task LoadOrdersAsync()
         {
             try
             {
-                var response = await SupabaseService.Client.From<Order>().Get();
-                Orders = new ObservableCollection<Order>(response.Models);
+                var orders = await StoreRepository.Current.GetOrdersAsync();
+                Orders = new ObservableCollection<Order>(orders);
                 OnPropertyChanged(nameof(Orders)); 
             }
             catch (Exception ex)

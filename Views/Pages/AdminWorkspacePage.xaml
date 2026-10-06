@@ -13,7 +13,7 @@
             <WrapPanel VerticalAlignment="Center">
 
                 <TextBlock Text="Поиск:" VerticalAlignment="Center" Margin="5,0" FontFamily="Times New Roman"/>
-                <TextBox Width="150" VerticalAlignment="Center" Tag="Найти по названию..." />
+                <TextBox Width="150" VerticalAlignment="Center" Tag="Найти по названию..." Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
 
                 <TextBlock Text="Цена:" VerticalAlignment="Center" Margin="15,0,5,0" FontFamily="Times New Roman"/>
                 <ComboBox Width="140" VerticalAlignment="Center" Height="30"

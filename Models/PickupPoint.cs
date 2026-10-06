@@ -12,10 +12,10 @@ namespace ShoesStoreApp.Models
     [Table("pickup_points")]
     public class PickupPoint : BaseModel
     {
-        [Column("index_code")] public string Index { get; set; }
-        [Column("city")] public string City { get; set; }
-        [Column("street")] public string Street { get; set; }
-        [Column("house")] public string House { get; set; }
+        [Column("index_code")] public string Index { get; set; } = string.Empty;
+        [Column("city")] public string City { get; set; } = string.Empty;
+        [Column("street")] public string Street { get; set; } = string.Empty;
+        [Column("house")] public string House { get; set; } = string.Empty;
         [JsonIgnore]
         public string FullAddress => $"{Index}, {City}, {Street}, д. {House}";
     }

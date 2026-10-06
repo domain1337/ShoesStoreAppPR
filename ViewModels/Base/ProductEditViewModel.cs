@@ -14,24 +14,38 @@ namespace ShoesStoreApp.ViewModels.Base
     public class ProductEditViewModel : ViewModelBase
     {
         public Product CurrentProduct { get; set; }
-        public RelayCommand SaveCommand { get; set; }
+        public AsyncRelayCommand SaveCommand { get; set; }
 
-        public RelayCommand SelectImageCommand { get; }
+        public AsyncRelayCommand SelectImageCommand { get; }
 
         public ProductEditViewModel(Product product)
         {
-            CurrentProduct = product;
-            SelectImageCommand = new RelayCommand(_ => ExecuteSelectImage());
-            SaveCommand = new RelayCommand(async _ => await Save());
+            CurrentProduct = new Product
+            {
+                Id = product.Id, Article = product.Article, Title = product.Title,
+                Unit = product.Unit, Price = product.Price, Supplier = product.Supplier,
+                Manufacturer = product.Manufacturer, Category = product.Category,
+                Discount = product.Discount, QuantityInStock = product.QuantityInStock,
+                Description = product.Description, ImagePath = product.ImagePath
+            };
+            SelectImageCommand = new AsyncRelayCommand(_ => ExecuteSelectImageAsync());
+            SaveCommand = new AsyncRelayCommand(async _ => await Save());
         }
 
         private async Task Save()
         {
             try
             {
-                await SupabaseService.Client.From<Product>().Upsert(CurrentProduct);
+                var validation = StoreValidation.Product(CurrentProduct);
+                if (validation != null)
+                {
+                    NotificationService.Show(validation, true);
+                    return;
+                }
+                if (CurrentProduct.Id == Guid.Empty) CurrentProduct.Id = Guid.NewGuid();
+                await StoreRepository.Current.SaveProductAsync(CurrentProduct);
 
-                NotificationService.Show("Данные сохранены!", true);
+                NotificationService.Show("Данные сохранены!");
 
                 foreach (Window win in Application.Current.Windows)
                 {
@@ -43,7 +57,7 @@ namespace ShoesStoreApp.ViewModels.Base
                 NotificationService.Show("Ошибка сохранения: " + ex.Message, true);
             }
         }
-        private async void ExecuteSelectImage()
+        private async Task ExecuteSelectImageAsync()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Image files (*.png;*.jpeg;*.jpg)|*.png;*.jpeg;*.jpg";
@@ -53,15 +67,8 @@ namespace ShoesStoreApp.ViewModels.Base
                 try
                 {
                     string filePath = openFileDialog.FileName;
-                    string fileName = Path.GetFileName(filePath);
-                    byte[] fileBytes = File.ReadAllBytes(filePath);
-
-                    string storagePath = $"products/{Guid.NewGuid()}_{fileName}";
-                    await SupabaseService.Client.Storage.From("images").Upload(fileBytes, storagePath);
-
-                    string publicUrl = SupabaseService.Client.Storage.From("images").GetPublicUrl(storagePath);
-
-                    CurrentProduct.ImagePath = publicUrl;
+                    byte[] fileBytes = await File.ReadAllBytesAsync(filePath);
+                    CurrentProduct.ImagePath = await StoreRepository.Current.UploadProductImageAsync(Path.GetFileName(filePath), fileBytes);
                     OnPropertyChanged(nameof(CurrentProduct));
                 }
                 catch (Exception ex)

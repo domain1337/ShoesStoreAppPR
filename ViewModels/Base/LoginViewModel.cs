@@ -12,11 +12,11 @@ namespace ShoesStoreApp.ViewModels.Base
 {
     public class LoginViewModel : ViewModelBase
     {
-        public RelayCommand LoginCommand { get; set; }
+        public AsyncRelayCommand LoginCommand { get; set; }
         public RelayCommand GuestCommand { get; set; }
         public RelayCommand RegisterCommand { get; set; }
 
-        private string _email;
+        private string _email = string.Empty;
         public string Email
         {
             get => _email;
@@ -25,10 +25,10 @@ namespace ShoesStoreApp.ViewModels.Base
 
         public LoginViewModel()
         {
-            LoginCommand = new RelayCommand(async (p) =>
+            LoginCommand = new AsyncRelayCommand(async (p) =>
             {
                 var passwordBox = p as PasswordBox;
-                string password = passwordBox?.Password;
+                string password = passwordBox?.Password ?? string.Empty;
                 await Login(password);
             });
 
@@ -43,27 +43,20 @@ namespace ShoesStoreApp.ViewModels.Base
 
         private async Task Login(string password)
         {
-            if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(password))
+            var validation = StoreValidation.Account(Email, password, false);
+            if (validation != null)
             {
-                NotificationService.Show("Введите логин и пароль", true);
+                NotificationService.Show(validation, true);
                 return;
             }
 
             try
             {
-                var session = await SupabaseService.Client.Auth.SignIn(Email, password);
+                var account = await AuthService.SignInAsync(Email.Trim(), password);
 
-                if (session != null && session.User != null)
+                if (!string.IsNullOrWhiteSpace(account.Email))
                 {
-                    string role = "client";
-                    var metadata = session.User.UserMetadata;
-                    if (metadata != null && metadata.ContainsKey("role"))
-                    {
-                        role = metadata["role"].ToString().Trim('"', ' ');
-                    }
-
-                    Services.UserService.CurrentRole = role.ToLower();
-                    Services.UserService.UserEmail = session.User.Email;
+                    UserService.SetAuthenticated(account.Email, account.Role);
 
                     var mainWindow = new MainWindow();
                     mainWindow.Show();
@@ -97,8 +90,7 @@ namespace ShoesStoreApp.ViewModels.Base
         {
             if (role == "guest")
             {
-                UserService.CurrentRole = "guest";
-                UserService.UserEmail = "Гость";
+                UserService.Reset();
             }
 
             var mainWindow = new MainWindow();

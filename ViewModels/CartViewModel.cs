@@ -15,22 +15,22 @@ namespace ShoesStoreApp.ViewModels
 
         public decimal TotalPrice => CartItems.Sum(p => p.FinalPrice);
 
-        private ObservableCollection<PickupPoint> _pickupPoints;
+        private ObservableCollection<PickupPoint> _pickupPoints = new();
         public ObservableCollection<PickupPoint> PickupPoints
         {
             get => _pickupPoints;
             set => Set(ref _pickupPoints, value);
         }
 
-        private PickupPoint _selectedPickupPoint;
-        public PickupPoint SelectedPickupPoint
+        private PickupPoint? _selectedPickupPoint;
+        public PickupPoint? SelectedPickupPoint
         {
             get => _selectedPickupPoint;
             set => Set(ref _selectedPickupPoint, value);
         }
 
         public RelayCommand RemoveItemCommand { get; }
-        public RelayCommand CheckoutCommand { get; }
+        public AsyncRelayCommand CheckoutCommand { get; }
 
         public CartViewModel()
         {
@@ -44,38 +44,30 @@ namespace ShoesStoreApp.ViewModels
                 }
             });
 
-            CheckoutCommand = new RelayCommand(async _ => await ExecuteCheckout(), _ => CartItems.Count > 0);
+            CheckoutCommand = new AsyncRelayCommand(async _ => await ExecuteCheckout(), _ => CartItems.Count > 0);
 
-            LoadPickupPoints();
+            _ = LoadPickupPointsAsync();
         }
 
-        private async void LoadPickupPoints()
+        public async Task LoadPickupPointsAsync()
         {
             try
             {
-                var response = await SupabaseService.Client.From<PickupPoint>().Get();
-                PickupPoints = new ObservableCollection<PickupPoint>(response.Models);
+                var points = await StoreRepository.Current.GetPickupPointsAsync();
+                PickupPoints = new ObservableCollection<PickupPoint>(points);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                NotificationService.Show("Ошибка загрузки пунктов выдачи: " + ex.Message, true);
+            }
         }
 
         private async Task ExecuteCheckout()
         {
-            if (!Services.UserService.IsAuthenticated)
+            var validation = StoreValidation.Checkout(UserService.IsAuthenticated, CartItems.Count, SelectedPickupPoint);
+            if (validation != null)
             {
-                NotificationService.Show("Оформление заказа доступно только авторизованным пользователям!", true);
-                return;
-            }
-
-            if (SelectedPickupPoint == null)
-            {
-                NotificationService.Show("Пожалуйста, выберите пункт выдачи!", true);
-                return;
-            }
-
-            if (CartItems == null || CartItems.Count == 0)
-            {
-                NotificationService.Show("Ваша корзина пуста!", true);
+                NotificationService.Show(validation, true);
                 return;
             }
 
@@ -86,13 +78,13 @@ namespace ShoesStoreApp.ViewModels
                 var newOrder = new Models.Order
                 {
                     Id = Guid.NewGuid(),
-                    CustomerEmail = Services.UserService.UserEmail,
-                    OrderContent = $"[Пункт выдачи: {SelectedPickupPoint.FullAddress}] | Товары: {productsInfo}",
+                    CustomerEmail = Services.UserService.UserEmail ?? string.Empty,
+                    OrderContent = $"[Пункт выдачи: {SelectedPickupPoint!.FullAddress}] | Товары: {productsInfo}",
                     TotalPrice = TotalPrice,
                     Status = "Новый"
                 };
 
-                await Services.SupabaseService.Client.From<Models.Order>().Insert(newOrder);
+                await StoreRepository.Current.CreateOrderAsync(newOrder);
 
                 NotificationService.Show("Заказ успешно оформлен! Ожидайте уведомления.");
 

@@ -11,7 +11,7 @@ namespace ShoesStoreApp.ViewModels
 {
     public class MainViewModel : Base.ViewModelBase
     {
-        private object _currentPage;
+        private object _currentPage = null!;
         public object CurrentPage
         {
             get => _currentPage;

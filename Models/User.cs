@@ -8,8 +8,8 @@ namespace ShoesStoreApp.Models
 {
     public class User
     {
-        public string Email { get; set; }
-        public string Role { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = "guest";
 
         public bool CanEdit => Role == "admin";
         public bool CanViewOrders => Role == "admin" || Role == "manager";

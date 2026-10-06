@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Tests\**\*.cs" />
     <None Remove="Assets\Images\logo.png" />
   </ItemGroup>
 

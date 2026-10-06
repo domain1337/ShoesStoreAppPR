@@ -12,10 +12,10 @@ namespace ShoesStoreApp.Models
         public Guid Id { get; set; }
 
         [Column("article")]
-        public string Article { get; set; }
+        public string Article { get; set; } = string.Empty;
 
         [Column("title")]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [Column("unit")]
         public string Unit { get; set; } = "шт.";
@@ -24,13 +24,13 @@ namespace ShoesStoreApp.Models
         public decimal Price { get; set; }
 
         [Column("supplier")]
-        public string Supplier { get; set; }
+        public string Supplier { get; set; } = string.Empty;
 
         [Column("manufacturer")]
-        public string Manufacturer { get; set; }
+        public string Manufacturer { get; set; } = string.Empty;
 
         [Column("category")]
-        public string Category { get; set; }
+        public string Category { get; set; } = string.Empty;
 
         [Column("discount")]
         public decimal Discount { get; set; }
@@ -39,10 +39,10 @@ namespace ShoesStoreApp.Models
         public int QuantityInStock { get; set; }
 
         [Column("description")]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [Column("image_path")]
-        public string ImagePath { get; set; }
+        public string ImagePath { get; set; } = string.Empty;
         [JsonIgnore]
         public decimal FinalPrice => Price * (1 - Discount / 100);
 
@@ -55,8 +55,7 @@ namespace ShoesStoreApp.Models
                     return "/Assets/Images/logo.png";
                 if (ImagePath.StartsWith("http"))
                     return ImagePath;
-                string projectId = "eowxuwrkuqubyorlgqmp";
-                return $"https://eowxuwrkuqubyorlgqmp.supabase.co/storage/v1/object/public/images/{ImagePath}";
+                return Services.SupabaseService.PublicImageUrl(ImagePath);
             }
         }
     }

@@ -30,13 +30,13 @@ namespace ShoesStoreApp.Views.Windows
                 this.Top = desktopWorkingArea.Bottom - this.Height - 10;
             }
 
-            AutoClose();
+            _ = AutoCloseAsync();
         }
 
-        private async void AutoClose()
+        private async System.Threading.Tasks.Task AutoCloseAsync()
         {
             await System.Threading.Tasks.Task.Delay(3500);
-            this.Close();
+            if (IsLoaded) Close();
         }
     }
 }

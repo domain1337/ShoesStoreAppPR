@@ -45,8 +45,9 @@
 
                             <TextBlock Text="{Binding Discount, StringFormat='Скидка: {0}%'}" 
                                        HorizontalAlignment="Right" Foreground="Blue" FontWeight="Bold" FontSize="12"/>
-                            <Button Content="В КОРЗИНУ" 
-                                    Background="#00FA9A" Height="40" Margin="0,15,0,0" FontWeight="Bold"
+                              <Button Content="В КОРЗИНУ"
+                                      Background="#00FA9A" Height="40" Margin="0,15,0,0" FontWeight="Bold"
+                                      Visibility="{Binding DataContext.IsNotGuest, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}"
                                     Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}"/>
                         </StackPanel>

@@ -11,34 +11,31 @@ namespace ShoesStoreApp.ViewModels.Base
 {
     public class RegisterViewModel : ViewModelBase
     {
-        private string _email;
+        private string _email = string.Empty;
         public string Email { get => _email; set => Set(ref _email, value); }
 
-        public RelayCommand RegisterCommand { get; }
+        public AsyncRelayCommand RegisterCommand { get; }
         public RelayCommand BackCommand { get; }
 
         public RegisterViewModel()
         {
-            RegisterCommand = new RelayCommand(async (param) =>
+            RegisterCommand = new AsyncRelayCommand(async (param) =>
             {
                 var passwordBox = param as PasswordBox;
-                string password = passwordBox?.Password;
+                string password = passwordBox?.Password ?? string.Empty;
 
-                if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(password))
+                var validation = StoreValidation.Account(Email, password, true);
+                if (validation != null)
                 {
-                    NotificationService.Show("Заполните все поля!", true);
+                    NotificationService.Show(validation, true);
                     return;
                 }
 
                 try
                 {
-                    var session = await SupabaseService.Client.Auth.SignUp(Email, password);
-
-                    if (session != null)
-                    {
-                        NotificationService.Show("Регистрация успешна! Теперь вы можете войти.", true);
-                        CloseWindow();
-                    }
+                    await AuthService.SignUpAsync(Email.Trim(), password);
+                    NotificationService.Show("Регистрация успешна! Проверьте почту, если требуется подтверждение.");
+                    CloseWindow();
                 }
                 catch (Exception ex)
                 {

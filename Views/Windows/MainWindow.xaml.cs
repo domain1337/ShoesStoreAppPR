@@ -24,8 +24,16 @@ namespace ShoesStoreApp.Views.Windows
             InitializeComponent();
         }
 
-        private void Logout_Click(object sender, RoutedEventArgs e)
+        private async void Logout_Click(object sender, RoutedEventArgs e)
         {
+            try { await AuthService.SignOutAsync(); }
+            catch (System.Exception ex)
+            {
+                NotificationService.Show("Не удалось завершить сеанс: " + ex.Message, true);
+                return;
+            }
+            UserService.Reset();
+            CartService.Clear();
             var loginWin = new LoginWindow();
             loginWin.Show();
             this.Close();
